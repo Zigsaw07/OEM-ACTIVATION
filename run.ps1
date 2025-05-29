@@ -1,5 +1,8 @@
 # Run this script as Administrator
 
+# Load Windows Forms for popups
+Add-Type -AssemblyName System.Windows.Forms
+
 function Get-OEMKey {
     try {
         $key = (Get-WmiObject -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey
@@ -12,7 +15,8 @@ function Get-OEMKey {
 $oemKey = Get-OEMKey
 
 if ([string]::IsNullOrWhiteSpace($oemKey)) {
-    Write-Host "No OEM key found." -ForegroundColor Red
+    Write-Host "❌ No OEM key found." -ForegroundColor Red
+    [System.Windows.Forms.MessageBox]::Show("No OEM key found on this device.", "Activation Error", 'OK', 'Error')
 } else {
     Write-Host "OEM key found: $oemKey" -ForegroundColor Cyan
 
@@ -31,10 +35,9 @@ if ([string]::IsNullOrWhiteSpace($oemKey)) {
 
     if ($activated) {
         Write-Host "✅ Windows activated successfully!" -ForegroundColor Green
-
-        # Show success popup
         [System.Windows.Forms.MessageBox]::Show("Windows activated successfully!", "Activation Complete", 'OK', 'Information')
     } else {
         Write-Host "⚠️ Failed to activate Windows with the OEM key." -ForegroundColor Yellow
+        # Optional: Add a popup here too if you want
     }
 }
