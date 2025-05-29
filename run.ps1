@@ -37,5 +37,4 @@ if ([string]::IsNullOrWhiteSpace($oemKey)) {
     }
 }
 
-# Self-delete after execution
-Remove-Item -Path $MyInvocation.MyCommand.Path -Force
+
