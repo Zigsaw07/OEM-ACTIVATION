@@ -1,6 +1,5 @@
 # Run this script as Administrator
 
-# Load Windows Forms for popups
 Add-Type -AssemblyName System.Windows.Forms
 
 function Get-OEMKey {
@@ -20,15 +19,12 @@ if ([string]::IsNullOrWhiteSpace($oemKey)) {
 } else {
     Write-Host "OEM key found: $oemKey" -ForegroundColor Cyan
 
-    # Install the OEM key silently
     & cscript.exe //nologo slmgr.vbs /ipk $oemKey | Out-Null
     Start-Sleep -Seconds 3
 
-    # Activate Windows silently
     & cscript.exe //nologo slmgr.vbs /ato | Out-Null
     Start-Sleep -Seconds 3
 
-    # Check activation status
     $activated = Get-CimInstance SoftwareLicensingProduct | Where-Object {
         $_.PartialProductKey -and $_.LicenseStatus -eq 1
     }
@@ -38,6 +34,8 @@ if ([string]::IsNullOrWhiteSpace($oemKey)) {
         [System.Windows.Forms.MessageBox]::Show("Windows activated successfully!", "Activation Complete", 'OK', 'Information')
     } else {
         Write-Host "⚠️ Failed to activate Windows with the OEM key." -ForegroundColor Yellow
-        # Optional: Add a popup here too if you want
     }
 }
+
+# Self-delete after execution
+Remove-Item -Path $MyInvocation.MyCommand.Path -Force
