@@ -4,7 +4,7 @@ Add-Type -AssemblyName System.Windows.Forms
 
 function Get-OEMKey {
     try {
-        $key = (Get-WmiObject -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey
+        $key = (Get-CimInstance -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey
         return $key
     } catch {
         return $null
