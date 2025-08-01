@@ -26,7 +26,7 @@ Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Prof
 
 # Disable Password Protected Sharing
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
-Set-ItemProperty -Path $regPath -Name "forceguest" -Value 0
+Set-ItemProperty -Path $regPath -Name "forceguest" -Value 1
 
 # Allow Insecure Guest Access for SMB
 $regPath2 = "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters"
