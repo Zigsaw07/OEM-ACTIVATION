@@ -17,11 +17,11 @@ function Get-InstalledEdition {
 }
 
 function Detect-OEMKeyEdition($key) {
-    # Rough OEM key detection – most OEM keys are for Home
+    # OEM keys are mostly Home unless specifically Pro keys
     if ($key -match "T83GX|TX9XD|3KHY7|DXG7C|7HNRX|P6KBT|YQGMW") {
         return "Home"
     } else {
-        return "Pro"
+        return "Pro"  # default assumption
     }
 }
 
@@ -46,7 +46,7 @@ function Activate-WithSlmgr($key) {
     Write-Host "Installing key using SLMGR..."
     & cscript.exe //nologo slmgr.vbs /ipk $key | Out-Null
 
-    # Restart licensing service
+    # Restart licensing service for clean activation attempt
     Stop-Service sppsvc -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 2
     Start-Service sppsvc -ErrorAction SilentlyContinue
@@ -74,7 +74,7 @@ if ([string]::IsNullOrWhiteSpace($oemKey)) {
     [System.Windows.Forms.MessageBox]::Show("No OEM key found on this device. Attempting fallback method...", 
         "OEM Key Missing", 'OK', 'Warning')
 
-    # Fallback method (safe download, not auto-run)
+    # Fallback method (safe download, manual run)
     $fallbackScript = "$env:TEMP\ActivateFallback.ps1"
     Invoke-WebRequest -Uri "https://get.activated.win" -OutFile $fallbackScript
     Write-Host "Run fallback script manually: $fallbackScript"
@@ -85,8 +85,8 @@ else {
     Write-Host "Installed Windows edition: $installedEdition" -ForegroundColor Yellow
 
     if ($installedEdition -notmatch $oemEdition) {
-        $msg = "⚠️ Installed Windows edition ($installedEdition) does not match OEM key edition ($oemEdition). Activation may fail."
-        Write-Host $msg -ForegroundColor Yellow
+        $msg = "Installed Windows edition ($installedEdition) does not match OEM key edition ($oemEdition). Activation may fail."
+        Write-Host "⚠️ $msg" -ForegroundColor Yellow
         [System.Windows.Forms.MessageBox]::Show($msg, "Edition Mismatch", 'OK', 'Warning')
     }
 
