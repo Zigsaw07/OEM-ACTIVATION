@@ -53,6 +53,7 @@ function Activate-WithSlmgr($key) {
     Start-Sleep -Seconds 5
 
     for ($i=1; $i -le 3; $i++) {
+        # Fixed: No $i: parsing issue
         Write-Host ("Attempt {0}: Activating with SLMGR..." -f $i)
         & cscript.exe //nologo slmgr.vbs /ato | Out-Null
         Start-Sleep -Seconds 5
