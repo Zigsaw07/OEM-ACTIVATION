@@ -10,40 +10,6 @@ if (-not $runningAsAdmin) {
     return
 }
 
-# ========================
-# 1. FIX NETWORK SHARING
-# ========================
-
-# Set network profile to Private
-Get-NetConnectionProfile | ForEach-Object {
-    if ($_.NetworkCategory -ne 'Private') {
-        Set-NetConnectionProfile -InterfaceIndex $_.InterfaceIndex -NetworkCategory Private
-    }
-}
-
-# Enable File and Printer Sharing
-Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Profile Any
-
-# Disable Password Protected Sharing
-$regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
-Set-ItemProperty -Path $regPath -Name "forceguest" -Value 1
-
-# Allow Insecure Guest Access for SMB
-$regPath2 = "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters"
-If (-not (Test-Path $regPath2)) {
-    New-Item -Path $regPath2 -Force | Out-Null
-}
-Set-ItemProperty -Path $regPath2 -Name "AllowInsecureGuestAuth" -Value 1 -Type DWord
-
-# Restart required services
-Restart-Service LanmanWorkstation
-Restart-Service LanmanServer
-
-Write-Host "Network sharing configured successfully." -ForegroundColor Green
-
-# ========================
-# 2. OEM ACTIVATION
-# ========================
 Add-Type -AssemblyName System.Windows.Forms
 
 function Get-OEMKey {
