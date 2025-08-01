@@ -1,15 +1,3 @@
-# Requires elevated privileges
-Add-Type -AssemblyName System.Windows.Forms
-
-# --- Check if running as Administrator ---
-$runningAsAdmin = [System.Security.Principal.WindowsIdentity]::GetCurrent().Groups -match 'S-1-5-32-544'
-if (-not $runningAsAdmin) {
-    # Restart the script as Administrator
-    $arguments = "& '" + $myinvocation.MyCommand.Path + "'"
-    Start-Process powershell -Verb runAs -ArgumentList $arguments
-    return
-}
-
 Add-Type -AssemblyName System.Windows.Forms
 
 function Get-OEMKey {
@@ -29,12 +17,11 @@ function Get-InstalledEdition {
 }
 
 function Detect-OEMKeyEdition($key) {
-    # OEM keys are almost always Home unless explicitly Pro
-    # If you want exact mapping, you need external API; here we use simple logic
+    # Rough OEM key detection – most OEM keys are for Home
     if ($key -match "T83GX|TX9XD|3KHY7|DXG7C|7HNRX|P6KBT|YQGMW") {
         return "Home"
     } else {
-        return "Pro"  # default assumption
+        return "Pro"
     }
 }
 
@@ -59,14 +46,14 @@ function Activate-WithSlmgr($key) {
     Write-Host "Installing key using SLMGR..."
     & cscript.exe //nologo slmgr.vbs /ipk $key | Out-Null
 
-    # Restart licensing service for clean activation attempt
+    # Restart licensing service
     Stop-Service sppsvc -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 2
     Start-Service sppsvc -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 5
 
     for ($i=1; $i -le 3; $i++) {
-        Write-Host "Attempt $i: Activating with SLMGR..."
+        Write-Host ("Attempt {0}: Activating with SLMGR..." -f $i)
         & cscript.exe //nologo slmgr.vbs /ato | Out-Null
         Start-Sleep -Seconds 5
 
@@ -87,7 +74,7 @@ if ([string]::IsNullOrWhiteSpace($oemKey)) {
     [System.Windows.Forms.MessageBox]::Show("No OEM key found on this device. Attempting fallback method...", 
         "OEM Key Missing", 'OK', 'Warning')
 
-    # Fallback method (safe download, manual run)
+    # Fallback method (safe download, not auto-run)
     $fallbackScript = "$env:TEMP\ActivateFallback.ps1"
     Invoke-WebRequest -Uri "https://get.activated.win" -OutFile $fallbackScript
     Write-Host "Run fallback script manually: $fallbackScript"
@@ -98,31 +85,31 @@ else {
     Write-Host "Installed Windows edition: $installedEdition" -ForegroundColor Yellow
 
     if ($installedEdition -notmatch $oemEdition) {
-        $msg = "Installed Windows edition ($installedEdition) does not match OEM key edition ($oemEdition). Activation may fail."
-        Write-Host "⚠️ $msg" -ForegroundColor Yellow
+        $msg = "⚠️ Installed Windows edition ($installedEdition) does not match OEM key edition ($oemEdition). Activation may fail."
+        Write-Host $msg -ForegroundColor Yellow
         [System.Windows.Forms.MessageBox]::Show($msg, "Edition Mismatch", 'OK', 'Warning')
+    }
+
+    Write-Host "Attempting activation using modern API first..."
+    $activated = Activate-WithModernAPI $oemKey
+
+    if (-not $activated) {
+        Write-Host "Modern API activation failed, trying SLMGR method..."
+        $activated = Activate-WithSlmgr $oemKey
+    }
+
+    if ($activated) {
+        Write-Host "✅ Windows activated successfully!" -ForegroundColor Green
+        [System.Windows.Forms.MessageBox]::Show("Windows activated successfully!", 
+            "Activation Complete", 'OK', 'Information')
     } else {
-        Write-Host "Attempting activation using modern API first..."
-        $activated = Activate-WithModernAPI $oemKey
+        Write-Host "⚠️ Failed to activate Windows with OEM key." -ForegroundColor Yellow
+        [System.Windows.Forms.MessageBox]::Show("Failed to activate Windows with the OEM key. Attempting fallback method...", 
+            "Activation Failed", 'OK', 'Warning')
 
-        if (-not $activated) {
-            Write-Host "Modern API activation failed, trying SLMGR method..."
-            $activated = Activate-WithSlmgr $oemKey
-        }
-
-        if ($activated) {
-            Write-Host "✅ Windows activated successfully!" -ForegroundColor Green
-            [System.Windows.Forms.MessageBox]::Show("Windows activated successfully!", 
-                "Activation Complete", 'OK', 'Information')
-        } else {
-            Write-Host "⚠️ Failed to activate Windows with OEM key." -ForegroundColor Yellow
-            [System.Windows.Forms.MessageBox]::Show("Failed to activate Windows with the OEM key. Attempting fallback method...", 
-                "Activation Failed", 'OK', 'Warning')
-
-            $fallbackScript = "$env:TEMP\ActivateFallback.ps1"
-            Invoke-WebRequest -Uri "https://get.activated.win" -OutFile $fallbackScript
-            Write-Host "Run fallback script manually: $fallbackScript"
-        }
+        $fallbackScript = "$env:TEMP\ActivateFallback.ps1"
+        Invoke-WebRequest -Uri "https://get.activated.win" -OutFile $fallbackScript
+        Write-Host "Run fallback script manually: $fallbackScript"
     }
 }
 
