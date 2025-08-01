@@ -113,7 +113,3 @@ else {
         Write-Host "Run fallback script manually: $fallbackScript"
     }
 }
-
-Write-Host "All tasks completed. Reboot is recommended." -ForegroundColor Cyan
-[System.Windows.Forms.MessageBox]::Show("Network fix applied and Windows activation attempted. Please reboot.", 
-    "Setup Complete", 'OK', 'Information')
