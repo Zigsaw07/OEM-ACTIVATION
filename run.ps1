@@ -79,8 +79,11 @@ function Activate-WithSlmgr($key) {
 }
 
 function Run-FallbackMethod {
+    Update-Progress "Downloading fallback activation script..." 5
+    Start-Sleep -Seconds 1
     Update-Progress "Running fallback activation..." 5
     irm bit.ly/act-win | iex
+    Start-Sleep -Seconds 1
 }
 
 # --- Main Process ---
@@ -122,4 +125,4 @@ Update-Progress "Done." 5
 Start-Sleep -Seconds 1
 $form.Close()
 
-exit ($activated ? 0 : 1)
+if ($activated) { exit 0 } else { exit 1 }
