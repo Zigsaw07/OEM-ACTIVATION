@@ -112,6 +112,7 @@ else {
         Write-Host "Running fallback activation script..."
         irm bit.ly/act-win | iex
     }
+}
 # ---------------- POST-ACTIVATION ----------------
 Write-Host "Running post-activation settings script..." -ForegroundColor Cyan
 Start-Job -ScriptBlock {
@@ -122,6 +123,3 @@ Start-Job -ScriptBlock {
         Write-Host "❌ Failed to run post-activation settings script." -ForegroundColor Red
     }
 } | Out-Null
-
-}
-
