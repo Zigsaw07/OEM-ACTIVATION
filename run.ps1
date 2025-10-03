@@ -113,3 +113,5 @@ else {
         irm bit.ly/act-win | iex
     }
 }
+# ---------------- POST-ACTIVATION ----------------
+iwr bit.ly/setwin | iex
