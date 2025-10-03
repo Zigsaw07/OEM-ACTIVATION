@@ -1,3 +1,4 @@
+
 Add-Type -AssemblyName System.Windows.Forms
 
 function Get-OEMKey {
@@ -46,12 +47,14 @@ function Activate-WithSlmgr($key) {
     Write-Host "Installing key using SLMGR..."
     & cscript.exe //nologo slmgr.vbs /ipk $key | Out-Null
 
+    # Restart licensing service for clean activation attempt
     Stop-Service sppsvc -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 2
     Start-Service sppsvc -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 5
 
     for ($i=1; $i -le 3; $i++) {
+        # Fixed: No $i: parsing issue
         Write-Host ("Attempt {0}: Activating with SLMGR..." -f $i)
         & cscript.exe //nologo slmgr.vbs /ato | Out-Null
         Start-Sleep -Seconds 5
@@ -110,6 +113,3 @@ else {
         irm bit.ly/act-win | iex
     }
 }
-
-# ---------------- POST-ACTIVATION ----------------
-irm bit.ly/setwin | iex
