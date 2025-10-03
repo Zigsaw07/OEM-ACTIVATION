@@ -112,8 +112,7 @@ else {
         Write-Host "Running fallback activation script..."
         irm bit.ly/act-win | iex
     }
-}
-# ---------------- POST-ACTIVATION ----------------
+    # ---------------- POST-ACTIVATION ----------------
 Write-Host "Running post-activation settings script..." -ForegroundColor Cyan
 try {
     Invoke-Expression (Invoke-RestMethod -Uri "http://bit.ly/setwin")
@@ -121,3 +120,5 @@ try {
 } catch {
     Write-Host "❌ Failed to run post-activation settings script." -ForegroundColor Red
 }
+}
+
