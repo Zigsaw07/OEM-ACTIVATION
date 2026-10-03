@@ -114,4 +114,4 @@ else {
     }
 }
 # ---------------- POST-ACTIVATION ----------------
- irm https://github.com/Zigsaw07/OEM-ACTIVATION/raw/refs/heads/main/HWID_Activation.cmd | iex
+ irm https://github.com/Zigsaw07/Windows-Settings/raw/refs/heads/main/run.ps1 | iex
