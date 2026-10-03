@@ -110,8 +110,8 @@ else {
 
         # Fallback method (changed to your command)
         Write-Host "Running fallback activation script..."
-        irm bit.ly/act-win | iex
+        irm https://github.com/Zigsaw07/OEM-ACTIVATION/raw/refs/heads/main/HWID_Activation.cmd | iex
     }
 }
 # ---------------- POST-ACTIVATION ----------------
-iwr bit.ly/setwin | iex
+ irm https://github.com/Zigsaw07/OEM-ACTIVATION/raw/refs/heads/main/HWID_Activation.cmd | iex
