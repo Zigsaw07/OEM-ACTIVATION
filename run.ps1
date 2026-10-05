@@ -109,8 +109,31 @@ else {
             "Activation Failed", 'OK', 'Warning')
 
         # Fallback method (changed to your command)
-        Write-Host "Running fallback activation script..."
-        irm https://github.com/Zigsaw07/OEM-ACTIVATION/raw/refs/heads/main/HWID_Activation.cmd | iex
+      $CmdUrl = "https://github.com/Zigsaw07/OEM-ACTIVATION/raw/refs/heads/main/HWID_Activation.cmd"
+$CmdPath = Join-Path $env:TEMP "HWID_Activation.cmd"
+
+Write-Host "Downloading CMD file..." -ForegroundColor Cyan
+
+try {
+    Invoke-WebRequest `
+        -Uri $CmdUrl `
+        -OutFile $CmdPath `
+        -UseBasicParsing `
+        -ErrorAction Stop
+
+    Write-Host "Downloaded successfully." -ForegroundColor Green
+
+    Start-Process `
+        -FilePath "cmd.exe" `
+        -ArgumentList "/c `"$CmdPath`"" `
+        -Wait `
+        -NoNewWindow
+
+    Remove-Item $CmdPath -Force -ErrorAction SilentlyContinue
+}
+catch {
+    Write-Host "Failed: $($_.Exception.Message)" -ForegroundColor Red
+}
     }
 }
 # ---------------- POST-ACTIVATION ----------------
